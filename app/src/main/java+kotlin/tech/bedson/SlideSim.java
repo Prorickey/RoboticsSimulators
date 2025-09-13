@@ -21,36 +21,36 @@ import java.awt.Color;
  * 
  * Specific scenario: 3 MiSUMi slides (SARC210) in series with one gobuilda 
  * yellowjacket (435 RPM) with a gobuilda pulley turning rotational motion
- * into linear motion. `
+ * into linear motion.
  */
 public class SlideSim {
     // Payload
-    private double payloadMass = 1.0; // kg
+    private final double payloadMass = 1.0; // kg
 
     // PID Constants
-    private double kP = 10;
-    private double kI = 0.0;
-    private double kD = 0.5;
+    private final double kP = 10;
+    private final double kI = 0.0;
+    private final double kD = 0.5;
 
     // MiSUMi slides configuration
-    private int numSlides = 3;
-    private double slideLength = 0.1; // m
-    private double slideStroke = 0.06; // m
-    private double slideMass = 0.08; // kg
+    private final int numSlides = 3;
+    private final double slideLength = 0.1; // m
+    private final double slideStroke = 0.06; // m
+    private final double slideMass = 0.08; // kg
 
     // Motor Specifications
-    private double torqueStall = 1.8338; // Nm 
-    private double radius = 0.0175; // m
-    private double wNoLoad = 45.553093425; // rad/s
+    private final double torqueStall = 1.8338; // Nm
+    private final double radius = 0.0175; // m
+    private final double wNoLoad = 45.553093425; // rad/s
 
     // Simulation constants
-    private double dt = 1/100.0; // Time step (seconds) - f=100 Hz
+    private final double dt = 1/100.0; // Time step (seconds) - f=100 Hz
 
     // Derived Constants
-    private double maxStroke = numSlides * slideStroke;
-    private double startingLength = slideLength - slideStroke;
-    private double maxLength = startingLength + maxStroke;
-    private double totalMass = payloadMass + (numSlides * slideMass);
+    private final double maxStroke = numSlides * slideStroke;
+    private final double startingLength = slideLength - slideStroke;
+    private final double maxLength = startingLength + maxStroke;
+    private final double totalMass = payloadMass + (numSlides * slideMass);
 
     public void runSimulation(double startingPosition, double targetPosition) {
         double stableStartTime = -1;
@@ -111,7 +111,7 @@ public class SlideSim {
             iSeries.add(time, kI * integral);
             dSeries.add(time, kD * derivative);
 
-            // --- Check if within tolerance ---
+            // Check if within tolerance
             if (Math.abs(error) < 0.01) {
                 if (!stableReached) {
                     if (stableStartTime < 0) stableStartTime = time; // first time in tolerance
@@ -125,7 +125,7 @@ public class SlideSim {
                 stableStartTime = -1;
             }
 
-            // --- If stable reached and 2 sec passed, stop ---
+            // If stable reached and 2 sec passed, stop
             if (stableReached && (time - stableStartTime >= 0.5)) {
                 System.out.println("Simulation complete at t=" + time + "s");
                 break;

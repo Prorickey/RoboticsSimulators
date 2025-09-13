@@ -8,6 +8,7 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+    id("org.jetbrains.kotlin.jvm") version "2.2.20"
 }
 
 repositories {
@@ -16,11 +17,9 @@ repositories {
 }
 
 dependencies {
-    // Use JUnit test framework.
-    testImplementation(libs.junit)
+    // Kotlin
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
 
-    // This dependency is used by the application.
-    implementation(libs.guava)
     implementation("org.jfree:jfreechart:1.5.6")
 }
 
@@ -31,7 +30,17 @@ java {
     }
 }
 
+sourceSets {
+    val main by getting {
+        java.setSrcDirs(listOf("src/main/java+kotlin"))
+    }
+
+    val test by getting {
+        java.setSrcDirs(listOf("src/test/java+kotlin"))
+    }
+}
+
 application {
     // Define the main class for the application.
-    mainClass = "tech.bedson.App"
+    mainClass = "tech.bedson.MainKt"
 }
