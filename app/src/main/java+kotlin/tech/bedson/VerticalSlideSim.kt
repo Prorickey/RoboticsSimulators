@@ -4,15 +4,10 @@ import org.jfree.data.xy.XYSeries
 import org.jfree.data.xy.XYSeriesCollection
 import kotlin.math.abs
 
-class VerticalSlideSim {
+class VerticalSlideSim(kP: Double, kI: Double, kD: Double) : Simulator(kP, kI, kD) {
     private val payloadMass = 1.0 // kg
 
     private val gravityConstant = 9.8067; // m/s^2
-
-    // PID Constants
-    private val kP = 20.0
-    private val kI = 10.0
-    private val kD = 0.5
 
     // MiSUMi slides configuration
     private val numSlides = 3
@@ -34,14 +29,7 @@ class VerticalSlideSim {
     private val maxLength = startingLength + maxStroke // m
     private val totalMass = payloadMass + (numSlides * slideMass) // kg
 
-    @JvmRecord
-    data class SimulationResults(
-        val totalCost: Double,
-        val positionDataset: XYSeriesCollection?,
-        val pidDataset: XYSeriesCollection?
-    )
-
-    fun runSimulation(startingPosition: Double, targetPosition: Double): SimulationResults {
+    override fun runSimulation(startingPosition: Double, targetPosition: Double, debug: Boolean): SimulationResults {
         var stableStartTime = -1.0
         var stableReached = false
 
@@ -82,11 +70,11 @@ class VerticalSlideSim {
 
             // Hardware Limitations
             if(position > maxLength) {
-                System.err.printf("Hardstop Hit: t=%.2f s, pos=%.3f, output=%.3f, accel = %.3f m/s^2, vel=%.3f, err=%.3f\n", time, position, output, acceleration, velocity, error)
+                if(debug) System.err.printf("Hardstop Hit: t=%.2f s, pos=%.3f, output=%.3f, accel = %.3f m/s^2, vel=%.3f, err=%.3f\n", time, position, output, acceleration, velocity, error)
                 velocity = 0.0
                 position = maxLength
             } else {
-                System.out.printf("              t=%.2f s, pos=%.3f, output=%.3f, accel = %.3f m/s^2, vel=%.3f, err=%.3f\n", time, position, output, acceleration, velocity, error);
+                if(debug) System.out.printf("              t=%.2f s, pos=%.3f, output=%.3f, accel = %.3f m/s^2, vel=%.3f, err=%.3f\n", time, position, output, acceleration, velocity, error);
             }
 
             // Save data for graph
@@ -112,7 +100,7 @@ class VerticalSlideSim {
             }
 
             if(stableReached && (time - stableStartTime >= 0.5)) {
-                println("Simulation complete at t=" + time + "s");
+                if(debug) println("Simulation complete at t=" + time + "s");
                 break
             }
         }

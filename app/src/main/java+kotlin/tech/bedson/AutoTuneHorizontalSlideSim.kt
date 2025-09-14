@@ -7,9 +7,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
 import kotlin.random.Random
 
 class AutoTuneHorizontalSlideSim {

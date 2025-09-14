@@ -1,20 +1,7 @@
 package tech.bedson;
 
-import java.awt.GridLayout;
-import javax.swing.JFrame;
-
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.ChartUtils;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import java.awt.Color;
-import java.io.File;
-import java.io.IOException;
 
 /**
  * This is my first ever simulator. This simulates a MiSUMi slide 
@@ -26,20 +13,9 @@ import java.io.IOException;
  * yellowjacket (435 RPM) with a gobuilda pulley turning rotational motion
  * into linear motion.
  */
-public class HorizontalSlideSim {
+public class HorizontalSlideSim extends Simulator {
     // Payload
     private final double payloadMass = 1.0; // kg
-
-    // PID Constants
-    private final double kP;
-    private final double kI;
-    private final double kD;
-
-    public HorizontalSlideSim(double kP, double kI, double kD) {
-        this.kP = kP;
-        this.kI = kI;
-        this.kD = kD;
-    }
 
     // MiSUMi slides configuration
     private final int numSlides = 3;
@@ -61,6 +37,10 @@ public class HorizontalSlideSim {
     private final double maxLength = startingLength + maxStroke;
     private final double totalMass = payloadMass + (numSlides * slideMass);
 
+    public HorizontalSlideSim(double kP, double kI, double kD) {
+        super(kP, kI, kD);
+    }
+
     // Penalties
     private final double overshootPenalty = 50;
     private final double settlingTimePenalty = 10;
@@ -76,10 +56,7 @@ public class HorizontalSlideSim {
                 (error * steadyStatePenalty);
     }
 
-    public record SimulationResults(double totalCost, XYSeriesCollection positionDataset, XYSeriesCollection pidDataset) {
-
-    }
-
+    @Override
     public SimulationResults runSimulation(double startingPosition, double targetPosition, boolean debug) {
         double totalCost = 0.0;
 
