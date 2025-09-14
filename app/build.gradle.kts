@@ -1,6 +1,7 @@
 plugins {
     application
     id("org.jetbrains.kotlin.jvm") version "2.2.20"
+    id("com.gradleup.shadow") version "9.1.0"
 }
 
 repositories {
@@ -17,13 +18,19 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(24)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
 sourceSets {
     val main by getting {
         java.setSrcDirs(listOf("src/main/java+kotlin"))
+    }
+}
+
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = application.mainClass.get()
     }
 }
 

@@ -34,13 +34,11 @@ public class HorizontalSlideSim {
     private final double kP;
     private final double kI;
     private final double kD;
-    private final boolean saveToFile;
 
-    public HorizontalSlideSim(double kP, double kI, double kD, boolean saveToFile) {
+    public HorizontalSlideSim(double kP, double kI, double kD) {
         this.kP = kP;
         this.kI = kI;
         this.kD = kD;
-        this.saveToFile = saveToFile;
     }
 
     // MiSUMi slides configuration
@@ -63,7 +61,28 @@ public class HorizontalSlideSim {
     private final double maxLength = startingLength + maxStroke;
     private final double totalMass = payloadMass + (numSlides * slideMass);
 
-    public void runSimulation(double startingPosition, double targetPosition) {
+    // Penalties
+    private final double overshootPenalty = 50;
+    private final double settlingTimePenalty = 10;
+    private final double steadyStatePenalty = 50;
+
+    /**
+     * Overshoot should be in percent from target; 0 if < 1cm
+     * Steady State more than 1cm. Less than 1cm shouldn't have any affect
+     */
+    private double calculateCost(double overshoot, double settlingTime, double error) {
+        return (overshoot * overshootPenalty) +
+                (settlingTime * settlingTimePenalty) +
+                (error * steadyStatePenalty);
+    }
+
+    public record SimulationResults(double totalCost, XYSeriesCollection positionDataset, XYSeriesCollection pidDataset) {
+
+    }
+
+    public SimulationResults runSimulation(double startingPosition, double targetPosition, boolean debug) {
+        double totalCost = 0.0;
+
         double stableStartTime = -1;
         boolean stableReached = false;
 
@@ -104,13 +123,18 @@ public class HorizontalSlideSim {
             velocity += acceleration * dt; // m/s
             position += velocity * dt; // m
 
+            double overshoot = position - targetPosition > 1 ? position - targetPosition : 0.0;
+            double settlingTime = stableReached ? stableStartTime : time;
+            double costError = error > 1 ? error : 0.0;
+            totalCost += calculateCost(overshoot, settlingTime, costError);
+
             if(position > maxLength) { // Hardware limitation
-                System.err.printf("Hardstop Hit: t=%.2f s, pos=%.3f, output=%.3f, accel = %.3f m/s^2, vel=%.3f, err=%.3f\n", time, position, output, acceleration, velocity, error);
+                if(debug) System.out.printf("Hardstop Hit: t=%.2f s, pos=%.3f, output=%.3f, accel = %.3f m/s^2, vel=%.3f, err=%.3f\n", time, position, output, acceleration, velocity, error);
                 velocity = 0;
                 position = maxLength;
             } else {
                 // Print state
-                System.out.printf("              t=%.2f s, pos=%.3f, output=%.3f, accel = %.3f m/s^2, vel=%.3f, err=%.3f\n", time, position, output, acceleration, velocity, error);
+                if(debug) System.out.printf("              t=%.2f s, pos=%.3f, output=%.3f, accel = %.3f m/s^2, vel=%.3f, err=%.3f\n", time, position, output, acceleration, velocity, error);
             }
 
             // Save data for graph
@@ -138,7 +162,7 @@ public class HorizontalSlideSim {
 
             // If stable reached and 2 sec passed, stop
             if (stableReached && (time - stableStartTime >= 0.5)) {
-                System.out.println("Simulation complete at t=" + time + "s");
+                if(debug) System.out.println("Simulation complete at t=" + time + "s");
                 break;
             }
         }
@@ -153,68 +177,6 @@ public class HorizontalSlideSim {
         pidDataset.addSeries(iSeries);
         pidDataset.addSeries(dSeries);
 
-        chartData(positionDataset, pidDataset);
-    }
-
-    public void chartData(XYSeriesCollection positionDataset, XYSeriesCollection pidDataset) {
-        JFreeChart positionChart = ChartFactory.createXYLineChart(
-                "Position vs Time",
-                "Time (s)",
-                "Position (m)",
-                positionDataset,
-                PlotOrientation.VERTICAL,
-                true, true, false
-        );
-
-        JFreeChart pidChart = ChartFactory.createXYLineChart(
-                "PID vs Time",
-                "Time (s)",
-                "Value",
-                pidDataset,
-                PlotOrientation.VERTICAL,
-                true, true, false
-        );
-
-        // Set colors and hide shapes for position chart
-        XYPlot posPlot = positionChart.getXYPlot();
-        XYLineAndShapeRenderer posRenderer = new XYLineAndShapeRenderer();
-        posRenderer.setSeriesPaint(0, Color.RED);
-        posRenderer.setSeriesPaint(1, Color.BLUE);
-        posRenderer.setSeriesPaint(2, Color.BLACK);
-        posRenderer.setSeriesShapesVisible(0, false);
-        posRenderer.setSeriesShapesVisible(1, false);
-        posRenderer.setSeriesShapesVisible(2, false);
-        posPlot.setRenderer(posRenderer);
-
-        // Set colors and hide shapes for PID chart
-        XYPlot pidPlot = pidChart.getXYPlot();
-        XYLineAndShapeRenderer pidRenderer = new XYLineAndShapeRenderer();
-        pidRenderer.setSeriesPaint(0, Color.RED);
-        pidRenderer.setSeriesPaint(1, Color.BLUE);
-        pidRenderer.setSeriesPaint(2, Color.BLACK);
-        pidRenderer.setSeriesShapesVisible(0, false);
-        pidRenderer.setSeriesShapesVisible(1, false);
-        pidRenderer.setSeriesShapesVisible(2, false);
-        pidPlot.setRenderer(pidRenderer);
-
-        JFrame frame = new JFrame("MiSUMi Slide Simulator");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        if(!saveToFile) {
-            javax.swing.JPanel panel = new javax.swing.JPanel(new GridLayout(1, 2));
-            panel.add(new ChartPanel(positionChart));
-            panel.add(new ChartPanel(pidChart));
-
-            frame.setContentPane(panel);
-            frame.pack();
-            frame.setVisible(true);
-        } else {
-            try {
-                ChartUtils.saveChartAsPNG(new File("positionChart.png"), positionChart, 800, 600);
-                ChartUtils.saveChartAsPNG(new File("pidChart.png"), pidChart, 800, 600);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        return new SimulationResults(totalCost, positionDataset, pidDataset);
     }
 }

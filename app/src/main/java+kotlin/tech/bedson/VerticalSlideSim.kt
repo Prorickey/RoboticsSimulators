@@ -3,14 +3,6 @@ package tech.bedson
 import org.jfree.data.xy.XYSeries
 import org.jfree.data.xy.XYSeriesCollection
 import kotlin.math.abs
-import org.jfree.chart.ChartFactory
-import org.jfree.chart.plot.PlotOrientation
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer
-import org.jfree.chart.ChartPanel
-import java.awt.Color
-import java.awt.GridLayout
-import javax.swing.JFrame
-import javax.swing.JPanel
 
 class VerticalSlideSim {
     private val payloadMass = 1.0 // kg
@@ -42,7 +34,14 @@ class VerticalSlideSim {
     private val maxLength = startingLength + maxStroke // m
     private val totalMass = payloadMass + (numSlides * slideMass) // kg
 
-    fun runSimulation(startingPosition: Double, targetPosition: Double) {
+    @JvmRecord
+    data class SimulationResults(
+        val totalCost: Double,
+        val positionDataset: XYSeriesCollection?,
+        val pidDataset: XYSeriesCollection?
+    )
+
+    fun runSimulation(startingPosition: Double, targetPosition: Double): SimulationResults {
         var stableStartTime = -1.0
         var stableReached = false
 
@@ -128,57 +127,6 @@ class VerticalSlideSim {
         pidDataset.addSeries(iSeries)
         pidDataset.addSeries(dSeries)
 
-        chartData(positionDataset, pidDataset)
-    }
-
-    fun chartData(positionDataset: XYSeriesCollection, pidDataset: XYSeriesCollection) {
-        val positionChart = ChartFactory.createXYLineChart(
-            "Position vs Time",
-            "Time (s)",
-            "Position (m)",
-            positionDataset,
-            PlotOrientation.VERTICAL,
-            true, true, false
-        )
-        
-        val pidChart = ChartFactory.createXYLineChart(
-            "PID vs Time",
-            "Time (s)",
-            "Value",
-            pidDataset,
-            PlotOrientation.VERTICAL,
-            true, true, false
-        )
-
-        val posPlot = positionChart.getXYPlot()
-        val posRenderer = XYLineAndShapeRenderer()
-        posRenderer.setSeriesPaint(0, Color.RED)
-        posRenderer.setSeriesPaint(1, Color.BLUE)
-        posRenderer.setSeriesPaint(2, Color.BLACK)
-        posRenderer.setSeriesShapesVisible(0, false)
-        posRenderer.setSeriesShapesVisible(1, false)
-        posRenderer.setSeriesShapesVisible(2, false)
-        posPlot.renderer = posRenderer
-
-        val pidPlot = pidChart.getXYPlot()
-        val pidRenderer = XYLineAndShapeRenderer()
-        pidRenderer.setSeriesPaint(0, Color.RED)
-        pidRenderer.setSeriesPaint(1, Color.BLUE)
-        pidRenderer.setSeriesPaint(2, Color.BLACK)
-        pidRenderer.setSeriesShapesVisible(0, false)
-        pidRenderer.setSeriesShapesVisible(1, false)
-        pidRenderer.setSeriesShapesVisible(2, false)
-        pidPlot.renderer = pidRenderer
-
-        val frame = JFrame("Vertical MiSUMi Slide Simulator")
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
-
-        val panel = JPanel(GridLayout(1, 2))
-        panel.add(ChartPanel(positionChart))
-        panel.add(ChartPanel(pidChart))
-
-        frame.contentPane = panel
-        frame.pack()
-        frame.isVisible = true
+        return SimulationResults(0.0, positionDataset, pidDataset)
     }
 }
