@@ -13,17 +13,17 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import java.awt.Color;
 
-/***
+/**
  * This is my first ever simulator. This simulates a MiSUMi slide 
  * system with a payload on the end. It takes a fair bit of information 
  * into account when simulating, but I have yet to verify how accurate 
  * it is. Nonetheless, it is a good start that I am proud of.
- * 
+ * <p>
  * Specific scenario: 3 MiSUMi slides (SARC210) in series with one gobuilda 
  * yellowjacket (435 RPM) with a gobuilda pulley turning rotational motion
  * into linear motion.
  */
-public class SlideSim {
+public class HorizontalSlideSim {
     // Payload
     private final double payloadMass = 1.0; // kg
 

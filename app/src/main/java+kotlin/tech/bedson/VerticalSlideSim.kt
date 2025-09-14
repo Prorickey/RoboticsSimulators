@@ -4,7 +4,6 @@ import org.jfree.data.xy.XYSeries
 import org.jfree.data.xy.XYSeriesCollection
 import kotlin.math.abs
 import org.jfree.chart.ChartFactory
-import org.jfree.chart.JFreeChart
 import org.jfree.chart.plot.PlotOrientation
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer
 import org.jfree.chart.ChartPanel
@@ -19,8 +18,8 @@ class VerticalSlideSim {
     private val gravityConstant = 9.8067; // m/s^2
 
     // PID Constants
-    private val kP = 10.0
-    private val kI = 0.0
+    private val kP = 20.0
+    private val kI = 10.0
     private val kD = 0.5
 
     // MiSUMi slides configuration
