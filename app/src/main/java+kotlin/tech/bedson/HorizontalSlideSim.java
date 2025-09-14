@@ -5,6 +5,7 @@ import javax.swing.JFrame;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
@@ -12,6 +13,8 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * This is my first ever simulator. This simulates a MiSUMi slide 
@@ -28,9 +31,17 @@ public class HorizontalSlideSim {
     private final double payloadMass = 1.0; // kg
 
     // PID Constants
-    private final double kP = 10;
-    private final double kI = 0.0;
-    private final double kD = 0.5;
+    private final double kP;
+    private final double kI;
+    private final double kD;
+    private final boolean saveToFile;
+
+    public HorizontalSlideSim(double kP, double kI, double kD, boolean saveToFile) {
+        this.kP = kP;
+        this.kI = kI;
+        this.kD = kD;
+        this.saveToFile = saveToFile;
+    }
 
     // MiSUMi slides configuration
     private final int numSlides = 3;
@@ -189,12 +200,21 @@ public class HorizontalSlideSim {
         JFrame frame = new JFrame("MiSUMi Slide Simulator");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        javax.swing.JPanel panel = new javax.swing.JPanel(new GridLayout(1, 2));
-        panel.add(new ChartPanel(positionChart));
-        panel.add(new ChartPanel(pidChart));
+        if(!saveToFile) {
+            javax.swing.JPanel panel = new javax.swing.JPanel(new GridLayout(1, 2));
+            panel.add(new ChartPanel(positionChart));
+            panel.add(new ChartPanel(pidChart));
 
-        frame.setContentPane(panel);
-        frame.pack();
-        frame.setVisible(true);
+            frame.setContentPane(panel);
+            frame.pack();
+            frame.setVisible(true);
+        } else {
+            try {
+                ChartUtils.saveChartAsPNG(new File("positionChart.png"), positionChart, 800, 600);
+                ChartUtils.saveChartAsPNG(new File("pidChart.png"), pidChart, 800, 600);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

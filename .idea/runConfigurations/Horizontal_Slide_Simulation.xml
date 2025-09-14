@@ -11,7 +11,7 @@
       <option name="taskNames">
         <list>
           <option value="run" />
-          <option value="--args='horizontalSlide'" />
+          <option value="--args='horizontalSlide showCharts'" />
         </list>
       </option>
       <option name="vmOptions" />

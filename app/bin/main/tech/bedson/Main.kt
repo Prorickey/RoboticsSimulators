@@ -16,7 +16,7 @@ fun main(args: Array<String>) {
             }
             "autoTuneHorizontalSlide" -> {
                 val tuner = AutoTuneHorizontalSlideSim()
-                val pidVals = tuner.optimize(20)
+                val pidVals = tuner.optimize(10)
                 println("Best values were found: kP ${pidVals[0]} kI ${pidVals[1]} kD ${pidVals[2]}")
                 val simulator = HorizontalSlideSim(pidVals[0], pidVals[1], pidVals[2], !showCharts)
                 simulator.runSimulation(0.100, 0.200)
