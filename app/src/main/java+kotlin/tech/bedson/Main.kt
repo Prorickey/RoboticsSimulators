@@ -24,8 +24,9 @@ fun main(args: Array<String>) {
                 chartData(results.positionDataset(), results.pidDataset(), !showCharts)
             }
             "verticalSlide" -> {
-                val simulator = VerticalSlideSim(10.0, 0.0, 0.5)
-                simulator.runSimulation(0.100, 0.220, true)
+                val simulator = VerticalSlideSim(55.0, 10.0, 1.0)
+                val results = simulator.runSimulation(0.060, 0.200, true)
+                chartData(results.positionDataset(), results.pidDataset(), !showCharts)
             }
             "autoTuneHorizontalSlide" -> {
                 val tuner = AutoTuneHorizontalSlideSim()
